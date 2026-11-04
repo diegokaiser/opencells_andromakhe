@@ -1,0 +1,12 @@
+# Dependencias que npm puede reconstruir.
+node_modules/
+
+# Metadatos locales de Finder.
+.DS_Store
+
+# Configuración local que podría contener valores privados.
+.env
+.env.*
+
+# Permitimos compartir una plantilla con valores ficticios.
+!.env.example
