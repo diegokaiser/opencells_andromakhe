@@ -10,3 +10,11 @@ node_modules/
 
 # Permitimos compartir una plantilla con valores ficticios.
 !.env.example
+
+# Preferencias e historial local del editor.
+.vscode/
+.history/
+
+# Salidas generadas por las herramientas del proyecto.
+dist/
+types/
