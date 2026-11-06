@@ -3,18 +3,18 @@ import { RouteDefinition } from "@open-cells/core/types";
 export const routes: RouteDefinition[] = [
 	{
 		path: "/",
-		name: "home",
-		component: "home-page",
+		name: "tasks",
+		component: "tasks-page",
 		action: async () => {
-			await import("../pages/home/home-page.js");
+			await import("../pages/tasks/tasks-page.js");
 		},
 	},
 	{
-		path: "/second",
-		name: "second",
-		component: "second-page",
+		path: "/task/:id",
+		name: "task",
+		component: "task-detail-page",
 		action: async () => {
-			await import("../pages/second/second-page.js");
+			await import("../pages/task-detail/task-detail-page.js");
 		},
 	},
 ];
