@@ -1,37 +1,38 @@
-import { startApp } from '@open-cells/core';
-import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
-import { ElementController } from '@open-cells/element-controller';
-import { routes } from '../router/routes.js';
-import { styles } from './app-index.css.js';
+import { startApp } from "@open-cells/core";
+import { LitElement, html } from "lit";
+import { customElement } from "lit/decorators.js";
+import { ElementController } from "@open-cells/element-controller";
+import { routes } from "../router/routes.js";
+import { styles } from "./app-index.css.js";
 
 startApp({
-  routes,
-  mainNode: 'app-content',
+	routes,
+	mainNode: "app-content",
 });
 
-@customElement('app-index')
+/**
+ * Estructura compartida de la aplicación.
+ * Mantiene el encabezado y muestra mediante el slot las páginas
+ * gestionadas por OpenCells, evitando repetir esa estructura en cada página.
+ */
+@customElement("app-index")
 export class AppIndex extends LitElement {
-  elementController = new ElementController(this);
+	elementController = new ElementController(this);
 
-  static styles = styles;
+	static styles = styles;
 
-  render() {
-    return html`
-      <header>
-        <nav>
-          <a class="brand-link" href="/">
-            <img class="brand-logo" src="https://www.opencells.dev/images/logo.svg" alt="Open Cells" />
-          </a>
-          <ul class="nav-links">
-            <li><a href="https://www.opencells.dev/docs/index.html" target="_blank" rel="noopener">Docs</a></li>
-            <li><a href="https://github.com/BBVA/open-cells" target="_blank" rel="noopener">GitHub</a></li>
-          </ul>
-        </nav>
-      </header>
-      <main role="main" tabindex="-1">
-        <slot></slot>
-      </main>
-    `;
-  }
+	render() {
+		return html`
+			<header>
+				<nav>
+					<!-- Acceso compartido al listado mediante la ruta inicial de OpenCells. -->
+					<a class="brand-link" href="#!/">Mis tareas</a>
+				</nav>
+			</header>
+			<main role="main" tabindex="-1">
+				<!-- El slot proyecta la página dentro del contenido principal compartido. -->
+				<slot></slot>
+			</main>
+		`;
+	}
 }
