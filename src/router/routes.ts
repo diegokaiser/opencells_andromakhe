@@ -17,4 +17,12 @@ export const routes: RouteDefinition[] = [
 			await import("../pages/task-detail/task-detail-page.js");
 		},
 	},
+	{
+		path: "/categories",
+		name: "categories",
+		component: "categories-page",
+		action: async () => {
+			await import("../pages/categories/categories-page.js");
+		},
+	},
 ];
