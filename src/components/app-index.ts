@@ -27,6 +27,8 @@ export class AppIndex extends LitElement {
 				<nav>
 					<!-- Acceso compartido al listado mediante la ruta inicial de OpenCells. -->
 					<a class="brand-link" href="#!/">Mis tareas</a>
+					<!-- Acceso a la gestión de categorías desde cualquier página. -->
+					<a href="#!/categories">Categorías</a>
 				</nav>
 			</header>
 			<main role="main" tabindex="-1">
