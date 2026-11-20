@@ -1,6 +1,7 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import type { Category } from "../../models/category.ts";
+import { createCategory, getCategories } from "../../state/task-state.js";
 
 /**
  * Página destinada a listar y crear categorías propias.
@@ -10,7 +11,7 @@ import type { Category } from "../../models/category.ts";
 export class CategoriesPage extends LitElement {
 	/** Colección interna cuya actualización debe reflejarse en el listado. */
 	@state()
-	private categories: Category[] = [];
+	private categories: Category[] = getCategories();
 
 	/** Explicación del error de validación; vacío significa que no hay error. */
 	@state()
@@ -36,36 +37,17 @@ export class CategoriesPage extends LitElement {
 			return;
 		}
 
-		const name = categoryName.trim();
+		// El módulo compartido valida y crea; la página presenta el resultado.
+    const result = createCategory(categoryName);
 
-		// Explica por qué un nombre compuesto solo por espacios no es válido.
-		if (name.length === 0) {
-			this.errorMessage = "Escribe un nombre que no contenga solo espacios.";
-			return;
-		}
+    if (!result.success) {
+      this.errorMessage = result.error;
+      return;
+    }
 
-		// Evita categorías equivalentes por diferencias de mayúsculas y minúsculas.
-		const alreadyExists = this.categories.some(
-			(category) => category.name.toLowerCase() === name.toLowerCase(),
-		);
-
-		if (alreadyExists) {
-			this.errorMessage = "Ya existe una categoría con ese nombre.";
-			return;
-		}
-
-		this.errorMessage = "";
-
-		// El identificador permanece estable aunque cambie el nombre visible.
-		const category: Category = {
-			id: crypto.randomUUID(),
-			name,
-		};
-
-		// Asignamos un array nuevo para que Lit detecte el cambio y actualice la lista.
-		this.categories = [...this.categories, category];
-
-		form.reset();
+    this.errorMessage = "";
+    this.categories = getCategories();
+    form.reset();
 	}
 
 	/** Muestra el formulario, los errores de validación y las categorías creadas. */
