@@ -1,6 +1,7 @@
 import { html, LitElement } from "lit";
 import { PageController } from "@open-cells/page-controller";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
+import { getTasks } from "../../state/task-state.js";
 import "../../components/task-item/task-item.js";
 import type { Task } from "../../models/task.js";
 
@@ -9,18 +10,9 @@ export class TasksPage extends LitElement {
 	pageController = new PageController(this);
 
 	/** Dato provisional para comprobar la entrada del componente reutilizable. */
-	private readonly exampleTasks: Task[] = [
-		{
-			id: "task-001",
-			title: "Lista de compra",
-			status: "completed",
-		},
-		{
-			id: "task-002",
-			title: "Crear lista de compra para BMO",
-			status: "pending",
-		},
-	];
+	/** Copia reactiva de las tareas confirmadas en el estado compartido. */
+  @state()
+  private tasks: Task[] = getTasks();
 
 	/**
 	 * Renderiza sin Shadow DOM para aprovechar los estilos globales
@@ -38,16 +30,30 @@ export class TasksPage extends LitElement {
 		this.pageController.navigate("task", { id: event.detail.id });
 	}
 
+  /**
+   * Recupera las tareas actuales al entrar, incluyendo las creadas
+   * mientras el listado permanecía fuera de la vista.
+   */
+  onPageEnter(): void {
+    this.tasks = getTasks();
+  }
+
 	render() {
 		return html`
 			<div class="hero">
 				<h1>Mis tareas</h1>
 				<p>Consulta el estado de tus tareas y accede a su detalle.</p>
+        <!-- Acceso al formulario sin modificar todavía la colección de tareas. -->
+        <a href="#!/tasks/new">Crear tarea</a>
 			</div>
 			<div class="features">
-				<!-- Lista provisional para practicar la navegación antes de incorporar datos reales. -->
+        ${this.tasks.length === 0
+          ? html`<p>Todavía no tienes tareas. Crea una para comenzar.</p>`
+          : null
+        }
+				<!-- Cada componente recibe una tarea y comunica la solicitud de detalle. -->
 				<ul>
-					${this.exampleTasks.map(
+					${this.tasks.map(
 						(task) => html`
 							<li>
 								<task-item

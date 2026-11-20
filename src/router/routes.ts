@@ -17,6 +17,14 @@ export const routes: RouteDefinition[] = [
 			await import("../pages/task-detail/task-detail-page.js");
 		},
 	},
+  {
+		path: "/tasks/new",
+		name: "create-task",
+		component: "create-task-page",
+		action: async () => {
+			await import("../pages/create-task-page/create-task-page.js");
+		},
+	},
 	{
 		path: "/categories",
 		name: "categories",
@@ -25,4 +33,13 @@ export const routes: RouteDefinition[] = [
 			await import("../pages/categories/categories-page.js");
 		},
 	},
+  {
+    // La etiqueta propia permite asociar los hooks a la ruta de edición.
+    path: "/tasks/:id/edit",
+    name: "edit-task",
+    component: "edit-task-page",
+    action: async () => {
+      await import("../pages/edit-task-page/edit-task-page.js");
+    },
+  },
 ];
