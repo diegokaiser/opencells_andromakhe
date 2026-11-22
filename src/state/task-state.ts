@@ -143,6 +143,14 @@ export type UpdateTaskResult =
 	| { success: false; error: string };
 
 /**
+ * Resultado de eliminar una tarea.
+ * Confirma la eliminación o explica por qué no pudo realizarse.
+ */
+export type DeleteTaskResult =
+	| { success: true }
+	| { success: false; error: string };
+
+/**
  * Valida y actualiza el título y la categoría de una tarea existente.
  * Conserva su identidad, fecha de creación y estado.
  * La ausencia de categoryId elimina la categoría asignada.
@@ -202,5 +210,64 @@ export function updateTask(id: string, input: UpdateTaskInput): UpdateTaskResult
   return {
     success: true,
     task: { ...updatedTask },
+  };
+}
+
+/**
+ * Asigna el estado solicitado sin modificar los demás datos de la tarea.
+ * Repetir la misma solicitud conserva el resultado.
+ * Devuelve un error si el identificador no existe y una copia si tiene éxito.
+ */
+export function setTaskStatus(id: string, status: Task["status"]): UpdateTaskResult {
+  const taskIndex = tasks.findIndex(
+    (task) => task.id === id,
+  );
+
+  if (taskIndex === -1) {
+    return {
+      success: false,
+      error: "La tarea cuyo estado intentas cambiar no existe.",
+    };
+  }
+
+  const currentTask = tasks[taskIndex];
+
+  const updatedTask: Task = {
+    ...currentTask,
+    status,
+  };
+
+  tasks = tasks.map((task, index) =>
+    index === taskIndex ? updatedTask : task
+  );
+
+  return {
+    success: true,
+    task: { ...updatedTask },
+  };
+}
+
+/**
+ * Elimina únicamente la tarea identificada y conserva las demás.
+ * Devuelve un error si no existe, sin modificar la colección.
+ */
+export function deleteTask(id: string): DeleteTaskResult {
+  const taskExists = tasks.some(
+    (task) => task.id === id
+  );
+
+  if (!taskExists) {
+    return {
+      success: false,
+      error: "La tarea que intentas eliminar no existe.",
+    };
+  }
+
+  tasks = tasks.filter(
+    (task) => task.id !== id
+  );
+
+  return {
+    success: true,
   };
 }
