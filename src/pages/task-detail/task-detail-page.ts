@@ -4,6 +4,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import type { Task } from "../../models/task.js";
 import { getTaskById, getCategories, setTaskStatus, deleteTask } from "../../state/task-state.js";
 import type { PropertyValues } from "lit";
+import { TASKS_CHANGED } from "../../state/channels.js";
 
 @customElement("task-detail-page")
 export class TaskDetailPage extends LitElement {
@@ -67,6 +68,9 @@ export class TaskDetailPage extends LitElement {
       return;
     }
 
+    // Notifica el cambio confirmado antes de actualizar la vista o navegar.
+    this.pageController.publish(TASKS_CHANGED, {});
+
     this.errorMessage = "";
     this.requestUpdate();
   }
@@ -89,6 +93,9 @@ export class TaskDetailPage extends LitElement {
       this.errorMessage = result.error;
       return;
     }
+
+    // Notifica el cambio confirmado antes de actualizar la vista o navegar.
+    this.pageController.publish(TASKS_CHANGED, {});
 
     this.errorMessage = "";
     this.pageController.navigate("tasks");

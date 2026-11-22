@@ -1,7 +1,9 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import type { Category } from "../../models/category.ts";
+import type { Category } from "../../models/category.js";
 import { createCategory, getCategories } from "../../state/task-state.js";
+import { PageController } from "@open-cells/page-controller";
+import { CATEGORIES_CHANGED } from "../../state/channels.js";
 
 /**
  * Página destinada a listar y crear categorías propias.
@@ -9,6 +11,9 @@ import { createCategory, getCategories } from "../../state/task-state.js";
  */
 @customElement("categories-page")
 export class CategoriesPage extends LitElement {
+  /** Proporciona la publicación de avisos mediante canales de OpenCells. */
+  pageController = new PageController(this);
+
 	/** Colección interna cuya actualización debe reflejarse en el listado. */
 	@state()
 	private categories: Category[] = getCategories();
@@ -44,6 +49,9 @@ export class CategoriesPage extends LitElement {
       this.errorMessage = result.error;
       return;
     }
+
+    // Comunica únicamente una creación confirmada, sin publicar en caso de error.
+    this.pageController.publish(CATEGORIES_CHANGED, {});
 
     this.errorMessage = "";
     this.categories = getCategories();

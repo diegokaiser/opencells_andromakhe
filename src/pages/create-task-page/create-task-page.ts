@@ -9,6 +9,7 @@ import {
   getTaskById,
   updateTask,
 } from "../../state/task-state.js";
+import { TASKS_CHANGED } from "../../state/channels.js";
 
 /**
  * Formulario compartido de creación y edición de tareas.
@@ -129,6 +130,9 @@ export class CreateTaskPage extends LitElement {
       this.errorMessage = result.error;
       return;
     }
+
+    // Notifica una modificación confirmada; los suscriptores consultarán los datos.
+    this.pageController.publish(TASKS_CHANGED, {});
 
     this.errorMessage = "";
 
