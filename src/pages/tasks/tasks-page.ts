@@ -19,6 +19,17 @@ export class TasksPage extends LitElement {
   @state()
   private categories: Category[] = getCategories();
 
+  /** Selección local que limita las tareas visibles sin modificar la colección. */
+  @state()
+  private statusFilter: "all" | "pending" | "completed" = "all";
+
+  /**
+   * Selección de categoría: all, uncategorized o un identificador existente.
+   * Solo afecta a la vista; no modifica las asignaciones de las tareas.
+   */
+  @state()
+  private categoryFilter: string = "all";
+
   /**
    * Escucha cambios mientras el componente está conectado.
    * Cada aviso consulta una copia actualizada del estado compartido.
@@ -61,11 +72,59 @@ export class TasksPage extends LitElement {
 	}
 
   /**
-   * Recupera las tareas actuales al entrar, incluyendo las creadas
-   * mientras el listado permanecía fuera de la vista.
+   * Selecciona las tareas que cumplen ambos filtros.
+   * Conserva intacta la colección utilizada por los contadores generales.
    */
-  onPageEnter(): void {
-    this.tasks = getTasks();
+  private get filteredTasks(): Task[] {
+    return this.tasks.filter((task) => {
+      const matchesStatus =
+        this.statusFilter === "all" ||
+        task.status === this.statusFilter;
+
+      const matchesCategory =
+        this.categoryFilter === "all" ||
+        (this.categoryFilter === "uncategorized" &&
+          task.categoryId === undefined) ||
+        task.categoryId === this.categoryFilter;
+
+      return matchesStatus && matchesCategory;
+    });
+  }
+
+  /**
+   * Valida la selección antes de actualizar el filtro reactivo.
+   * No modifica las tareas guardadas, solo cuáles se muestran.
+   */
+  private handleStatusFilterChange(event: Event): void {
+    const select = event.currentTarget;
+
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const value = select.value;
+
+    if (value === "all" || value === "pending" || value === "completed") {
+      this.statusFilter = value;
+    }
+  }
+
+  /** Acepta opciones reservadas o categorías existentes antes de actualizar la vista. */
+  private handleCategoryFilterChange(event: Event): void {
+    const select = event.currentTarget;
+
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const value = select.value;
+    const categoryExists = this.categories.some(
+      (category) => category.id === value,
+    );
+
+    if (value === "all" || value === "uncategorized" || categoryExists) {
+      this.categoryFilter = value;
+    }
   }
 
 	render() {
@@ -109,9 +168,36 @@ export class TasksPage extends LitElement {
           ? html`<p>Todavía no tienes tareas. Crea una para comenzar.</p>`
           : null
         }
+        <label for="task-status-filter">Filtrar por estado</label>
+        <select
+          id="task-status-filter"
+          .value=${this.statusFilter}
+          @change=${this.handleStatusFilterChange}
+        >
+          <option value="all">Todas</option>
+          <option value="pending">Pendientes</option>
+          <option value="completed">Completadas</option>
+        </select>
+        <label for="task-category-filter">Filtrar por categoría</label>
+        <select
+          id="task-category-filter"
+          .value=${this.categoryFilter}
+          @change=${this.handleCategoryFilterChange}
+        >
+          <option value="all">Todas las categorías</option>
+          <option value="uncategorized">Sin categoría</option>
+          ${this.categories.map(
+            (category) => html`
+              <option value=${category.id}>${category.name}</option>
+            `,
+          )}
+        </select>
+        ${this.tasks.length > 0 && this.filteredTasks.length === 0
+          ? html`<p>No hay tareas que coincidan con los filtros.</p>`
+          : null}
 				<!-- Cada componente recibe una tarea y comunica la solicitud de detalle. -->
 				<ul>
-					${this.tasks.map(
+					${this.filteredTasks.map(
 						(task) => html`
 							<li>
 								<task-item
