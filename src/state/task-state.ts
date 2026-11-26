@@ -1,10 +1,52 @@
 import type { Task, CreateTaskInput, UpdateTaskInput } from "../models/task.js";
 import type { Category } from "../models/category.js";
+import { loadState, saveState } from "./storage.js";
+import type { SaveStateResult } from "./storage.js";
 
-// Datos confirmados en memoria; se perderán al recargar la aplicación.
-// Las colecciones permanecen privadas al módulo para controlar sus cambios.
+// Estado confirmado en memoria, recuperado del almacenamiento al iniciar.
+// Las operaciones persisten el próximo estado antes de confirmar sus cambios.
+// Las colecciones permanecen privadas al módulo para controlar sus modificaciones.
 let tasks: Task[] = [];
 let categories: Category[] = [];
+
+// Recupera ambas colecciones antes de que las páginas soliciten sus datos.
+const loadedState = loadState();
+
+if (loadedState.status === "success") {
+	tasks = loadedState.data.tasks;
+	categories = loadedState.data.categories;
+}
+
+/** Fallo de recuperación que la interfaz podrá comunicar al usuario. */
+const loadError =
+	loadedState.status === "error" ? loadedState.error : undefined;
+
+/** Permite consultar el fallo de arranque sin volver a leer el almacenamiento. */
+export function getLoadError(): string | undefined {
+	return loadError;
+}
+
+/**
+ * Guarda el próximo estado antes de confirmarlo en memoria.
+ * Protege el contenido existente si falló su recuperación al arrancar.
+ */
+function persistState(
+	nextTasks: Task[],
+	nextCategories: Category[],
+): SaveStateResult {
+	if (loadError !== undefined) {
+		return {
+			success: false,
+			error: "No se guardarán cambios mientras exista un error de recuperación.",
+		};
+	}
+
+	return saveState({
+		version: 1,
+		tasks: nextTasks,
+		categories: nextCategories,
+	});
+}
 
 /**
  * Devuelve una copia de la colección y de cada tarea.
@@ -62,7 +104,18 @@ export function createCategory(name: string): CreateCategoryResult {
     name: normalizedName,
   };
 
-  categories = [...categories, category];
+  const nextCategories = [...categories, category];
+  const saved = persistState(tasks, nextCategories);
+
+  if (!saved.success) {
+    return {
+      success: false,
+      error: saved.error,
+    };
+  }
+
+  // Confirma el cambio en memoria únicamente después de guardarlo.
+  categories = nextCategories;
 
   // La copia evita exponer el objeto que conserva el estado compartido.
   return {
@@ -72,9 +125,9 @@ export function createCategory(name: string): CreateCategoryResult {
 }
 
 /**
- * Valida y crea una tarea en memoria, comprobando su categoría si se indica.
- * Genera la identidad, la fecha y el estado inicial en un único punto.
- * Devuelve una copia para evitar modificaciones externas del objeto guardado.
+ * Valida y persiste una tarea antes de incorporarla al estado en memoria.
+ * Comprueba su categoría y genera identidad, fecha y estado inicial.
+ * Devuelve una copia para proteger el objeto guardado.
  */
 export function createTask(input: CreateTaskInput): CreateTaskResult {
 	const normalizedTitle = input.title.trim();
@@ -110,7 +163,18 @@ export function createTask(input: CreateTaskInput): CreateTaskResult {
 		task.categoryId = input.categoryId;
 	}
 
-	tasks = [...tasks, task];
+	const nextTasks = [...tasks, task];
+  const saved = persistState(nextTasks, categories);
+
+  if (!saved.success) {
+    return {
+      success: false,
+      error: saved.error,
+    };
+  }
+
+  // Confirma la tarea en memoria después de persistir ambas colecciones.
+  tasks = nextTasks;
 
 	return {
 		success: true,
@@ -202,10 +266,22 @@ export function updateTask(id: string, input: UpdateTaskInput): UpdateTaskResult
     delete updatedTask.categoryId;
   }
 
-  // Reemplaza solo la tarea editada y conserva las demás.
-  tasks = tasks.map((task, index) =>
+  // Prepara el reemplazo sin modificar todavía la colección confirmada.
+  const nextTasks = tasks.map((task, index) =>
     index === taskIndex ? updatedTask : task,
   );
+
+  const saved = persistState(nextTasks, categories);
+
+  if (!saved.success) {
+    return {
+      success: false,
+      error: saved.error,
+    };
+  }
+
+  // Confirma la edición solo cuando el almacenamiento acepta el cambio.
+  tasks = nextTasks;
 
   return {
     success: true,
@@ -237,9 +313,21 @@ export function setTaskStatus(id: string, status: Task["status"]): UpdateTaskRes
     status,
   };
 
-  tasks = tasks.map((task, index) =>
-    index === taskIndex ? updatedTask : task
+  const nextTasks = tasks.map((task, index) =>
+    index === taskIndex ? updatedTask : task,
   );
+
+  const saved = persistState(nextTasks, categories);
+
+  if (!saved.success) {
+    return {
+      success: false,
+      error: saved.error,
+    };
+  }
+
+  // Conserva el estado anterior en memoria si no pudo persistirse el cambio.
+  tasks = nextTasks;
 
   return {
     success: true,
@@ -263,9 +351,21 @@ export function deleteTask(id: string): DeleteTaskResult {
     };
   }
 
-  tasks = tasks.filter(
-    (task) => task.id !== id
+  const nextTasks = tasks.filter(
+    (task) => task.id !== id,
   );
+
+  const saved = persistState(nextTasks, categories);
+
+  if (!saved.success) {
+    return {
+      success: false,
+      error: saved.error,
+    };
+  }
+
+  // Elimina también de memoria solo después de guardar la colección restante.
+  tasks = nextTasks;
 
   return {
     success: true,
