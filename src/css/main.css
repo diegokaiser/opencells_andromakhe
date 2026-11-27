@@ -15,6 +15,15 @@
   --color-navy:       #072146;
   --color-red:        #D44B50;
   --color-white:      #FFFFFF;
+
+  /* Roles visuales inspirados en la referencia oscura. */
+  --app-background: #9aaff5;
+  --app-surface: #354f9f;
+  --app-surface-dark: #07164f;
+  --app-text: #ffffff;
+  --app-text-muted: #c4cff5;
+  --app-accent: #d900e8;
+  --app-border: #7188ca;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -23,7 +32,7 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Archivo', sans-serif;
-  background: var(--color-white);
+  background: var(--app-background);
   color: var(--color-blue-dark);
   -webkit-font-smoothing: antialiased;
 }

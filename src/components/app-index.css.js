@@ -32,7 +32,8 @@ export const styles = css`
     align-items: center;
     height: 4.5rem;
     padding: 0 1.5rem;
-    background: #fff;
+    background: var(--app-surface);
+    color: var(--app-text);
     border-bottom: 1px solid transparent;
     box-shadow: none;
     transition:
@@ -51,7 +52,27 @@ export const styles = css`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* Separación entre accesos mientras preparamos el menú lateral. */
+    gap: 1.5rem;
     width: 100%;
+  }
+
+  /* Navegación compartida sobre la superficie azul. */
+  nav a {
+    color: var(--app-text);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  nav a:hover {
+    text-decoration: underline;
+  }
+
+  /* Identifica el enlace activo para quien navega mediante teclado. */
+  nav a:focus-visible {
+    outline: 2px solid var(--app-text);
+    outline-offset: 4px;
+    border-radius: 4px;
   }
 
   .brand-link {
@@ -114,6 +135,30 @@ export const styles = css`
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Mantiene legible el aviso compartido de recuperación de datos. */
+  main > [role='alert'] {
+    position: relative;
+    z-index: 1;
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 0.875rem;
+    background: var(--app-surface-dark);
+    color: var(--app-text);
+    line-height: 1.5;
+  }
+
+  /* Conserva la navegación sin animaciones cuando el usuario reduce el movimiento. */
+  @media (prefers-reduced-motion: reduce) {
+    header {
+      transition: none;
+    }
+
+    main ::slotted([state='active']) {
+      animation: none;
     }
   }
 `;

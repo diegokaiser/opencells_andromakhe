@@ -4,6 +4,7 @@ import type { Category } from "../../models/category.js";
 import { createCategory, getCategories } from "../../state/task-state.js";
 import { PageController } from "@open-cells/page-controller";
 import { CATEGORIES_CHANGED } from "../../state/channels.js";
+import { formPageStyles } from "../../css/form-page-styles.js";
 
 /**
  * Página destinada a listar y crear categorías propias.
@@ -11,6 +12,9 @@ import { CATEGORIES_CHANGED } from "../../state/channels.js";
  */
 @customElement("categories-page")
 export class CategoriesPage extends LitElement {
+  /** Mantiene la misma base visual que los formularios de tareas. */
+  static styles = formPageStyles;
+
   /** Proporciona la publicación de avisos mediante canales de OpenCells. */
   pageController = new PageController(this);
 
