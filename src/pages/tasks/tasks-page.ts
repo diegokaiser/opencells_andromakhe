@@ -196,7 +196,7 @@ export class TasksPage extends LitElement {
           ? html`<p>No hay tareas que coincidan con los filtros.</p>`
           : null}
 				<!-- Cada componente recibe una tarea y comunica la solicitud de detalle. -->
-				<ul>
+				<ul class="task-list">
 					${this.filteredTasks.map(
 						(task) => html`
 							<li>

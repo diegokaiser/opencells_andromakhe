@@ -10,6 +10,7 @@ import {
   updateTask,
 } from "../../state/task-state.js";
 import { TASKS_CHANGED } from "../../state/channels.js";
+import { formPageStyles } from "../../css/form-page-styles.js";
 
 /**
  * Formulario compartido de creación y edición de tareas.
@@ -18,6 +19,9 @@ import { TASKS_CHANGED } from "../../state/channels.js";
  */
 @customElement("create-task-page")
 export class CreateTaskPage extends LitElement {
+  /** Comparte la base visual con las demás páginas de formulario. */
+  static styles = formPageStyles;
+
 	pageController = new PageController(this);
 
   /**
